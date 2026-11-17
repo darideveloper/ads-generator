@@ -1,0 +1,16 @@
+name: Acme
+logo: brands/example/assets/logo.png
+
+colors:
+  primary: "#0F172A"
+  accent: "#22D3EE"
+  on_accent: "#04121A"
+  text: "#FFFFFF"
+
+fonts:
+  headline: /usr/share/fonts/truetype/litefonts/Roboto-Bold.ttf
+  body: /usr/share/fonts/truetype/litefonts/Roboto-Regular.ttf
+
+tone: "directo, concreto, sin superlativos vacíos"
+disclaimer: ""
+default_cta: "Comprar ahora"

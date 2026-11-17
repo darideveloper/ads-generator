@@ -1,0 +1,29 @@
+brand: example
+
+product: "Cafetera Acme X200"
+description: "Cafetera de cápsulas compacta que prepara un espresso en 25 segundos."
+benefits:
+  - "Espresso en 25 segundos, sin esperar"
+  - "Depósito de 1.2 L: rinde toda la mañana de oficina"
+  - "Limpieza automática con un botón"
+offer: "20% de descuento en las primeras 500 unidades"
+audience: "Oficinistas de 28 a 45 años que toman café a diario y tienen poco tiempo"
+objective: conversion
+cta: "Comprar ahora"
+url: "https://example.com/x200"
+language: es
+
+pain_points:
+  - "Las cafeteras de oficina tardan y hay que limpiarlas a mano"
+  - "El café de la máquina de la oficina sabe a quemado"
+differentiators:
+  - "Calienta en 25 segundos"
+  - "Una sola pieza lavable"
+objections:
+  - "¿Se calienta mucho la cápsula?"
+  - "¿Ocupa espacio en la cocina?"
+
+refs:
+  - brands/example/assets/product-1.png
+
+concepts: 3
