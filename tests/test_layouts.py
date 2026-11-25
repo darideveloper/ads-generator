@@ -2,6 +2,8 @@
 
 import json
 
+import pytest
+import yaml
 from PIL import Image
 
 import ads
@@ -230,3 +232,21 @@ def test_unknown_layout_is_rejected(tmp_path):
         assert "layout" in str(exc)
     else:
         raise AssertionError("a bad layout must not load")
+
+
+def test_campaign_on_image_is_authored_and_validated(tmp_path):
+    path = campaign(tmp_path, "type")
+    path.write_text(
+        path.read_text()
+        + 'on_image:\n  - "  Dos venden lo mismo  "\n  - "Tres reservas, una van"\n'
+        + '  - "Nadie ve el horario"\n'
+    )
+    assert ads.load_campaign(path)["on_image"] == [
+        "Dos venden lo mismo",
+        "Tres reservas, una van",
+        "Nadie ve el horario",
+    ]
+
+    path.write_text(path.read_text().replace('  - "Nadie ve el horario"\n', ""))
+    with pytest.raises(ads.ConfigError, match="exactly 3"):
+        ads.load_campaign(path)

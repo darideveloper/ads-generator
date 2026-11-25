@@ -11,16 +11,23 @@ benefits:
   - "Asignación de unidades sin hojas de cálculo"
   - "El pasajero recibe su confirmación solo"
 offer: "Diagnóstico inicial sin costo, aplicado al proyecto si decides seguir"
-audience: "Dueños y encargados de tour operadores, transportadoras y DMC en Cancún, Playa del Carmen, Tulum y Los Cabos"
+audience: "Dueños y encargados de tour operadores, transportadoras y DMC en Cancún, Playa del Carmen, Tulum, Puerto Morelos, Los Cabos, San José del Cabo y Mérida"
 objective: conversion
-cta: "Escríbeme por WhatsApp"
+# 18 chars max: this is the in-image button. Meta carries the "WhatsApp" label.
+cta: "Mándame WhatsApp"
 url: "https://www.darideveloper.com/turismo"
 language: es
 
 pain_points:
-  - "Las reservas viven en WhatsApp y en un Excel que solo entiende una persona"
   - "Se sobrevende porque dos personas venden el mismo horario"
+  - "Las reservas viven en WhatsApp y en un Excel que solo entiende una persona"
   - "Nadie sabe cuántos pasajeros van en cada unidad hasta que ya salieron"
+
+# Authored by us, not by the model: three statements of the same pain, one per variant.
+on_image:
+  - "Dos venden lo mismo"
+  - "Tres reservas, una van"
+  - "Nadie ve el horario"
 differentiators:
   - "Panel hecho para la operación, no un CRM adaptado"
   - "Funciona desde el celular del chofer"

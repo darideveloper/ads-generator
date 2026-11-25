@@ -86,6 +86,10 @@ to the brand's `default_cta`), `kicker` (label above the statement, defaults to 
 `objections`, `disclaimer`, `refs` (product photos, photo layout only), `concepts` (default 1,
 max 6).
 
+`on_image` takes exactly three statements, one per variant (A, B, C), and overrides the model's.
+Use it to test three angles of the *same* pain: the model tends to drift to a benefit by the
+second line. Each line is limited to 24 characters and the render fails if it does not fit.
+
 Captures are expected to arrive already clean: the generator does not blur names, phones or
 emails. Automating that invites publishing something half covered.
 

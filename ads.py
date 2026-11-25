@@ -244,7 +244,16 @@ def load_campaign(path: Path) -> dict:
         raise ConfigError(
             f"{path}: 'captures' has {len(captures)} files, needs 1 or {concepts} (one per concept)"
         )
+    statements = [" ".join(str(item).split()) for item in (data.get("on_image") or [])]
+    if statements and len(statements) != 3:
+        raise ConfigError(f"{path}: 'on_image' needs exactly 3 lines, one per variant (A, B, C)")
+    for statement in statements:
+        if len(statement) > ON_IMAGE_LIMIT:
+            raise ConfigError(
+                f"{path}: on_image '{statement}' is {len(statement)} chars (limit {ON_IMAGE_LIMIT})"
+            )
     data["refs"] = refs
+    data["on_image"] = statements
     data["captures"] = [str(capture) for capture in captures]
     data["layout"] = layout
     data["language"] = language
@@ -590,6 +599,12 @@ def run(args) -> int:
         config["text_model"], SYSTEM_PROMPT, build_prompt(brand, campaign, count), PLAN_SCHEMA
     )
     concepts, ab_plan, warnings = normalize_plan(plan, count, needs_image=layout == "photo")
+    if campaign["on_image"]:
+        # Authored copy wins over the model: three statements of the same pain, approved before
+        # rendering. The model still writes the platform copy.
+        for concept in concepts:
+            concept["on_image"] = list(campaign["on_image"])
+        warnings = [warning for warning in warnings if "on_image" not in warning]
 
     # Resolved before --only: the pairing is by concept id, not by position after filtering.
     captures = resolve_captures(campaign, concepts)
