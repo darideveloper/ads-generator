@@ -3,7 +3,6 @@
 import base64
 import io
 import json
-from pathlib import Path
 
 from PIL import Image
 
@@ -14,6 +13,7 @@ CONCEPTS = [
         "angle": "problem",
         "hook": "Café frío a media mañana",
         "headlines": ["Tu café en 25 segundos", "Sin colas, sin esperar", "Espresso listo ya"],
+        "on_image": ["Espresso en 25 s", "Café en 25 segundos", "Nada de esperar"],
         "subhead": "La cafetera que cabe en cualquier oficina",
         "primary_text": "Prepara espresso en 25 segundos y olvídate de la máquina quemada.",
         "headline_short": "Café en 25 segundos",
@@ -25,6 +25,7 @@ CONCEPTS = [
         "angle": "proof",
         "hook": "1.200 oficinas ya lo cambiaron",
         "headlines": ["El café que sí sabe a café", "Limpieza en un botón", "30 días de prueba"],
+        "on_image": ["Sabe a café", "Limpieza en un botón", "Prueba 30 días"],
         "subhead": "Miles de oficinas ya dejaron atrás la máquina vieja",
         "primary_text": "Una sola pieza lavable y espresso real. Cambia tu cafetera este mes.",
         "headline_short": "Café que sabe a café",
@@ -36,6 +37,7 @@ CONCEPTS = [
         "angle": "offer",
         "hook": "20% solo esta semana",
         "headlines": ["Ahorra 20% esta semana", "Últimas 500 unidades", "Precio de lanzamiento"],
+        "on_image": ["Últimas 500", "Precio de lanzamiento", "Se acaba esta semana"],
         "subhead": "Oferta válida hasta agotar las primeras 500 unidades",
         "primary_text": "20% de descuento en la primera compra. Envío gratis a todo el país.",
         "headline_short": "Ahorra 20%",
@@ -102,21 +104,25 @@ def test_full_run(tmp_path, monkeypatch):
     assert (out / "plan.json").exists()
     assert (out / "copy.md").exists()
     assert (out / "ab-plan.md").exists()
+    assert (out / "contact-sheet.png").exists()
     assert len(list((out / "clean").glob("concept-*"))) == 6
-    assert len(list((out / "finals").glob("*.png"))) == 18
-    assert len(list((out / "display").glob("*.jpg"))) == 9
+    # Default is AB: two variants, three concepts, two ratios.
+    assert len(list((out / "finals").glob("*.png"))) == 12
+    assert not list((out / "finals").glob("*-C.png"))
+    assert len(list((out / "display").glob("*.jpg"))) == 6
     assert Image.open(out / "finals" / "concept-1-1x1-A.png").size == (1080, 1080)
     assert Image.open(out / "display" / "concept-1-1200x628-B.jpg").size == (1200, 628)
 
     manifest = json.loads((out / "manifest.json").read_text())
-    assert manifest["totals"]["finals"] == 18
+    assert manifest["layout"] == "photo"
+    assert manifest["totals"]["finals"] == 12
     assert manifest["totals"]["clean"] == 6
     assert manifest["totals"]["cost_usd"] == round(0.004 + 0.18, 4)
 
     # Re-running without --force must not spend again (cached art, existing finals).
     assert ads.run(args) == 0
     manifest = json.loads((out / "manifest.json").read_text())
-    assert manifest["totals"]["finals"] == 18
+    assert manifest["totals"]["finals"] == 12
     assert manifest["totals"]["cost_usd"] == 0.004  # this run only
 
 

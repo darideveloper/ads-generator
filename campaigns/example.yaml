@@ -1,5 +1,8 @@
 brand: example
 
+# AI art + overlay. Opt-in: it costs money per render, the typographic layout does not.
+layout: photo
+
 product: "Cafetera Acme X200"
 description: "Cafetera de cápsulas compacta que prepara un espresso en 25 segundos."
 benefits:

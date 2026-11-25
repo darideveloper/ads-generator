@@ -1,0 +1,37 @@
+brand: daridev
+
+# type = typographic statement (default, zero cost) · capture = real screenshot · photo = AI art
+layout: type
+kicker: "OPERACIÓN TURÍSTICA"
+
+product: "Sistema de operación para tour operadores"
+description: "Panel propio donde se registran reservas, se asignan unidades y se ve el día completo sin preguntar por WhatsApp."
+benefits:
+  - "Todas las reservas del día en una sola pantalla"
+  - "Asignación de unidades sin hojas de cálculo"
+  - "El pasajero recibe su confirmación solo"
+offer: "Diagnóstico inicial sin costo, aplicado al proyecto si decides seguir"
+audience: "Dueños y encargados de tour operadores, transportadoras y DMC en Cancún, Playa del Carmen, Tulum y Los Cabos"
+objective: conversion
+cta: "Escríbeme por WhatsApp"
+url: "https://www.darideveloper.com/turismo"
+language: es
+
+pain_points:
+  - "Las reservas viven en WhatsApp y en un Excel que solo entiende una persona"
+  - "Se sobrevende porque dos personas venden el mismo horario"
+  - "Nadie sabe cuántos pasajeros van en cada unidad hasta que ya salieron"
+differentiators:
+  - "Panel hecho para la operación, no un CRM adaptado"
+  - "Funciona desde el celular del chofer"
+objections:
+  - "¿Y si mi equipo no lo sabe usar?"
+  - "¿Cuánto tardo en tenerlo funcionando?"
+
+# One file per concept, in order. Uncomment when the panel screenshots exist.
+# captures:
+#   - capturas/panel-calendario.png
+#   - capturas/panel-asignacion.png
+#   - capturas/panel-dia.png
+
+concepts: 1

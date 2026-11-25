@@ -1,0 +1,24 @@
+name: DariDev
+logo: brands/daridev/assets/logo-mark.png
+logo_height: 56 # px on a 1080 canvas, scales with the canvas
+
+# SB4 Blueprint Ice — mirrors content-os/apps/hyperframes/assets/tokens.css
+colors:
+  primary: "#0b0e11" # paper
+  text: "#f2f5f7" # ink
+  muted: "#9fc3d8" # ink-soft
+  accent: "#67e8f9" # blue
+  accent_text: "#a5f3fc" # blue-dark, for small text on paper
+  on_accent: "#083344" # carbon on ice
+  line: "#1e2a32"
+  panel: "#0e1622"
+
+fonts:
+  headline: brands/daridev/fonts/JetBrainsMono-ExtraBold.ttf
+  body: brands/daridev/fonts/Inter-Regular.ttf
+  block: brands/daridev/fonts/ArchivoBlack-Regular.ttf
+  mono: brands/daridev/fonts/SourceCodePro-Bold.ttf
+
+tone: "Directo, concreto, sin superlativos. Español de México. El villano es el proceso, no la gente."
+default_cta: "Escríbeme por WhatsApp"
+disclaimer: ""
