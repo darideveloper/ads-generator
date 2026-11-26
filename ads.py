@@ -32,7 +32,7 @@ RATIO_SLUG = {"1:1": "1x1", "4:5": "4x5", "9:16": "9x16", "16:9": "16x9"}
 DISPLAY = (1200, 628)
 DISPLAY_ASPECT = DISPLAY[0] / DISPLAY[1]
 VARIANTS = "ABC"
-LAYOUTS = ("type", "capture", "photo")
+LAYOUTS = ("type", "capture", "chat", "photo")
 ON_IMAGE_LIMIT = 24
 COST_PRIOR = {"1K": 0.05, "2K": 0.15, "4K": 0.30}
 REQUIRED_CAMPAIGN = ["product", "description", "benefits", "offer", "audience", "objective", "url"]
@@ -240,6 +240,25 @@ def load_campaign(path: Path) -> dict:
             raise ConfigError(f"{path}: capture not found: {capture}")
     if layout == "capture" and not captures:
         raise ConfigError(f"{path}: layout 'capture' needs 'capture' or 'captures'")
+    chat = data.get("chat") or {}
+    if not isinstance(chat, dict):
+        raise ConfigError(f"{path}: 'chat' must be a mapping with 'title' and 'messages'")
+    messages = []
+    for message in chat.get("messages") or []:
+        if not isinstance(message, dict) or not str(message.get("text") or "").strip():
+            raise ConfigError(f"{path}: every chat message needs 'from', 'time' and 'text'")
+        messages.append(
+            {
+                "from": " ".join(str(message.get("from") or "").split()),
+                "time": " ".join(str(message.get("time") or "").split()),
+                "text": " ".join(str(message["text"]).split()),
+            }
+        )
+    if len(messages) > 3:
+        raise ConfigError(f"{path}: 'chat.messages' takes at most 3 lines, has {len(messages)}")
+    if layout == "chat" and not messages:
+        raise ConfigError(f"{path}: layout 'chat' needs 'chat.messages'")
+    chat = {"title": " ".join(str(chat.get("title") or "").split()), "messages": messages}
     if captures and len(captures) not in (1, concepts):
         raise ConfigError(
             f"{path}: 'captures' has {len(captures)} files, needs 1 or {concepts} (one per concept)"
@@ -254,6 +273,7 @@ def load_campaign(path: Path) -> dict:
             )
     data["refs"] = refs
     data["on_image"] = statements
+    data["chat"] = chat
     data["captures"] = [str(capture) for capture in captures]
     data["layout"] = layout
     data["language"] = language
@@ -777,6 +797,10 @@ def run(args) -> int:
             return overlay.compose_capture(
                 dest, brand, copy, RATIOS[ratio], captures[concept["id"]], kicker=kicker
             )
+        if layout == "chat":
+            return overlay.compose_chat(
+                dest, brand, copy, RATIOS[ratio], campaign["chat"], kicker=kicker
+            )
         return overlay.compose_type(dest, brand, copy, RATIOS[ratio], kicker=kicker)
 
     def compose_display(concept: dict, variant: str, dest) -> dict:
@@ -789,6 +813,10 @@ def run(args) -> int:
         if layout == "capture":
             return overlay.compose_capture(
                 dest, brand, copy, DISPLAY, captures[concept["id"]], kicker=kicker, jpeg=True
+            )
+        if layout == "chat":
+            return overlay.compose_chat(
+                dest, brand, copy, DISPLAY, campaign["chat"], kicker=kicker, jpeg=True
             )
         return overlay.compose_type(dest, brand, copy, DISPLAY, kicker=kicker, jpeg=True)
 

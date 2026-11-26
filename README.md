@@ -1,12 +1,13 @@
 # ads-generator
 
-One brief in, a full ad set out: three layouts, copy from a text model, deterministic Pillow
+One brief in, a full ad set out: four layouts, copy from a text model, deterministic Pillow
 composition, platform exports, an A/B plan and a cost manifest.
 
 ```
 brief + brand kit
   -> text model: concepts (problem / proof / offer), 3 headlines + 3 on-image lines, A/B plan
-  -> layout: type (brand canvas, 0 cost) | capture (real screenshot) | photo (AI art, opt-in)
+  -> layout: type (brand canvas, 0 cost) | chat (recreated thread)
+             | capture (real screenshot) | photo (AI art, opt-in)
   -> Pillow: grid, frame, logo, kicker, statement, CTA — measured before drawn
   -> out/<campaign>/: finals/, display/, contact-sheet.png, copy.md, ab-plan.md, manifest.json
 ```
@@ -39,7 +40,7 @@ python ads.py --campaign campaigns/example.yaml --ratios 1:1 --budget 1
 | flag | effect |
 | --- | --- |
 | `--campaign PATH` | campaign brief (required) |
-| `--layout type\|capture\|photo` | override the campaign's layout |
+| `--layout type\|chat\|capture\|photo` | override the campaign's layout |
 | `--variants AB\|ABC` | which on-image variants to render (default `AB`) |
 | `--ratios 1:1,4:5` | override the matrix (default `1:1,4:5`) |
 | `--only concept-1` | render a subset (repeatable) |
@@ -55,6 +56,11 @@ python ads.py --campaign campaigns/example.yaml --ratios 1:1 --budget 1
 CTA block. The headline starts at 240 px and shrinks until the copy fits, so a three-word
 statement fills the frame and an eight-word one still fits three lines. No images, no model
 call, **0 USD**.
+
+**`chat`** — same canvas, with a recreated conversation in the card above the statement. Three
+messages from three people assigning the same van at the same hour, minutes apart. Names are
+invented and the thread is drawn, never captured, so no real chat can leak. The messages live in
+the brief (`chat.title`, `chat.messages`), not in the code.
 
 **`capture`** — same canvas, with a real screenshot in the slot above the statement. The
 screenshot keeps its own proportion: it is scaled down to fit, never cropped (cutting a UI at a
@@ -82,7 +88,8 @@ the system uses, with the OFL license, and `brands/daridev/README.md` documents 
 `campaigns/<name>.yaml` — required: `product`, `description`, `benefits` (3+), `offer`,
 `audience`, `objective` (`awareness|conversion`), `url`. Optional: `layout`, `cta` (falls back
 to the brand's `default_cta`), `kicker` (label above the statement, defaults to the brand name),
-`brand`, `language` (`es`), `capture`/`captures`, `pain_points`, `differentiators`,
+`brand`, `language` (`es`), `chat` (`title` + 2-3 `messages`, chat layout only),
+`capture`/`captures`, `pain_points`, `differentiators`,
 `objections`, `disclaimer`, `refs` (product photos, photo layout only), `concepts` (default 1,
 max 6).
 
@@ -119,7 +126,7 @@ max 14). The logo is composited by Pillow and never sent to the model.
 
 ## Cost
 
-`type` and `capture` runs cost only the text call (≈ $0.004). The photo layout bills per image
+`type`, `chat` and `capture` runs cost only the text call (≈ $0.004). The photo layout bills per image
 (~$0.03–0.15 per 2K render), so a 3-concept × 2-ratio run is roughly **$0.2–0.9**.
 `manifest.json` records the exact `usage.cost` per image; the budget guard uses a conservative
 prior before the first call. Totals cover the current run only — cached art is not re-billed.
@@ -148,7 +155,7 @@ error: aspect ratio(s) 4:5 not supported by this image model. Supported: 1:1, 16
 ```
 
 instead of a silent bad crop. Parameters the model doesn't declare are never sent. This check
-runs only in the photo layout — the other two never touch the image API.
+runs only in the photo layout — the other three never touch the image API.
 
 ### Changing the text model
 

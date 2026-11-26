@@ -250,3 +250,44 @@ def test_campaign_on_image_is_authored_and_validated(tmp_path):
     path.write_text(path.read_text().replace('  - "Nadie ve el horario"\n', ""))
     with pytest.raises(ads.ConfigError, match="exactly 3"):
         ads.load_campaign(path)
+
+
+CHAT = {
+    "title": "Vans · sábado",
+    "messages": [
+        {"from": "Joel", "time": "08:12", "text": "Van 2 · 9:00 · salgo con 3"},
+        {"from": "Karla", "time": "08:14", "text": "Van 2 · 9:00 · vendí 2 más"},
+        {"from": "Recepción", "time": "08:19", "text": "Van 2 · 9:00 · 4 en recepción"},
+    ],
+}
+
+
+def test_chat_layout_keeps_the_card_above_the_statement(tmp_path):
+    brand = ads.load_brand(BRAND_PATH)
+    copy = {"headline": "Tres reservas, una van", "subhead": "", "cta": "Mándame WhatsApp",
+            "disclaimer": ""}
+    for ratio in ((1080, 1080), (1080, 1350)):
+        dest = tmp_path / f"chat-{ratio[1]}.png"
+        info = overlay.compose_chat(dest, brand, copy, ratio, CHAT, kicker="OPERACIÓN TURÍSTICA")
+        assert info["warnings"] == []
+        assert not overlay.overlaps(info["rects"]["chat"], info["rects"]["text"])
+        with Image.open(dest) as img:
+            assert img.size == ratio
+
+
+def test_chat_layout_survives_a_long_message(tmp_path):
+    brand = ads.load_brand(BRAND_PATH)
+    chat = {"title": "Vans", "messages": [dict(CHAT["messages"][0], text="x" * 90)]}
+    copy = {"headline": "Tres reservas, una van", "subhead": "", "cta": "Escríbeme", "disclaimer": ""}
+    info = overlay.compose_chat(tmp_path / "long.png", brand, copy, (1080, 1080), chat)
+    assert not overlay.overlaps(info["rects"]["chat"], info["rects"]["text"])
+
+
+def test_chat_campaign_needs_messages(tmp_path):
+    path = campaign(tmp_path, "chat")
+    with pytest.raises(ads.ConfigError, match="chat.messages"):
+        ads.load_campaign(path)
+
+    path.write_text(path.read_text() + 'chat:\n  messages:\n    - from: Joel\n      text: "a"\n')
+    loaded = ads.load_campaign(path)
+    assert loaded["chat"]["messages"][0]["from"] == "Joel"

@@ -1,0 +1,53 @@
+brand: daridev
+
+# chat = recreated conversation (arquetipo c). Invented names, never a real screenshot.
+layout: chat
+kicker: "OPERACIÓN TURÍSTICA"
+
+product: "Sistema de operación para tour operadores"
+description: "Panel propio donde se registran reservas, se asignan unidades y se ve el día completo sin preguntar por WhatsApp."
+benefits:
+  - "Todas las reservas del día en una sola pantalla"
+  - "Asignación de unidades sin hojas de cálculo"
+  - "El pasajero recibe su confirmación solo"
+offer: "Diagnóstico inicial sin costo, aplicado al proyecto si decides seguir"
+audience: "Dueños y encargados de tour operadores, transportadoras y DMC en Cancún, Playa del Carmen, Tulum, Puerto Morelos, Los Cabos, San José del Cabo y Mérida"
+objective: conversion
+# 18 chars max: this is the in-image button. Meta carries the "WhatsApp" label.
+cta: "Mándame WhatsApp"
+url: "https://www.darideveloper.com/turismo"
+language: es
+
+pain_points:
+  - "Se sobrevende porque dos personas venden el mismo horario"
+  - "Las reservas viven en WhatsApp y en un Excel que solo entiende una persona"
+  - "Nadie sabe cuántos pasajeros van en cada unidad hasta que ya salieron"
+
+# Three people assign the same van at the same hour, minutes apart. That is the whole pain;
+# the statement below only names it. Names are invented and obvious on purpose.
+chat:
+  title: "Vans · sábado"
+  messages:
+    - from: "Joel"
+      time: "08:12"
+      text: "Van 2 · 9:00 · salgo con 3"
+    - from: "Karla"
+      time: "08:14"
+      text: "Van 2 · 9:00 · vendí 2 más"
+    - from: "Recepción"
+      time: "08:19"
+      text: "Van 2 · 9:00 · 4 en recepción"
+
+on_image:
+  - "Tres reservas, una van"
+  - "Nadie ve el horario"
+  - "Dos venden lo mismo"
+
+differentiators:
+  - "Panel hecho para la operación, no un CRM adaptado"
+  - "Funciona desde el celular del chofer"
+objections:
+  - "¿Y si mi equipo no lo sabe usar?"
+  - "¿Cuánto tardo en tenerlo funcionando?"
+
+concepts: 1

@@ -1,9 +1,10 @@
 """Deterministic composition.
 
-Three layouts, one grammar:
+Four layouts, one grammar:
 
 - ``compose_type``    brand canvas + kicker + statement + CTA. No image, no cost.
 - ``compose_capture`` the same statement plus a real screenshot in a framed slot.
+- ``compose_chat``    the same statement plus a recreated chat: the pain as three messages.
 - ``compose``         photo with the copy washed over it (legacy overlay, now on brand).
 
 Every text block is measured before it is drawn, so nothing escapes the safe box and
@@ -43,6 +44,7 @@ CTA_H = 0.070
 CTA_TEXT = 0.035
 DISCLAIMER = 0.016
 LINE = 1.18
+CHAT_SHARE = 0.56  # share of the content height the chat card claims above the statement
 GRID = 44
 GRID_ALPHA = 23  # 9 % ice
 WASH_ALPHA = 205
@@ -150,9 +152,11 @@ def fit_block(
             continue
         lines = wrap(text, font, max_w)
         line_h = int(size * line_ratio)
+        ascent, descent = font.getmetrics()
+        block_h = len(lines) * line_h + max(0, ascent + descent - line_h)
         if (
             len(lines) <= max_lines
-            and len(lines) * line_h <= max_h
+            and block_h <= max_h
             and all(font.getlength(line) <= max_w for line in lines)
         ):
             return font, lines, line_h, []
@@ -241,6 +245,7 @@ def _tokens(brand: dict) -> dict:
         "accent_text": _color(colors.get("accent_text") or colors.get("accent", "#67e8f9")),
         "on_accent": _color(colors.get("on_accent", "#083344")),
         "line": _color(colors.get("line") or colors.get("accent", "#67e8f9")),
+        "panel": _color(colors.get("panel", "#0e1622")),
         "display": fonts.get("headline") or DEFAULT_HEAD_FONT,
         "body": fonts.get("body") or DEFAULT_BODY_FONT,
         "block": fonts.get("block") or fonts.get("headline") or DEFAULT_HEAD_FONT,
@@ -491,6 +496,184 @@ def _place_capture(canvas, path, slot, brand: dict, warnings: list) -> tuple | N
     )
     canvas.alpha_composite(shot, (x, y))
     return (x, y, x + shot.width, y + shot.height)
+
+
+CHAT_UNIT = 0.058  # starting body size; the fit loop shrinks it to the band
+
+
+def compose_chat(out_path, brand: dict, copy: dict, target_size, chat: dict,
+                 kicker: str = "", jpeg: bool = False) -> dict:
+    """Statement plus a recreated group chat.
+
+    The messages are invented and obvious on purpose: a real chat is never captured, and no
+    screenshot of anyone's phone ever enters a piece.
+    """
+    canvas = _canvas(target_size, brand)
+    insets = insets_for(target_size)
+    _frame(canvas, brand, insets)
+    logo_rect = _logo(canvas, brand, insets)
+
+    w, h = canvas.size
+    scale = scale_for(canvas.size)
+    gap = int(28 * scale)
+    # The chat claims a fixed band so the statement sizes itself against what is left,
+    # instead of eating the canvas and leaving nothing above it.
+    content_h = h - insets["top"] - insets["bottom"]
+    chat_bottom = insets["top"] + int(content_h * CHAT_SHARE)
+    info = _statement(canvas, brand, copy, dict(insets, top=chat_bottom + gap), kicker)
+
+    slot_top = (logo_rect[3] if logo_rect else insets["top"]) + gap
+    # Never let the card run into the statement, even if the headline overflows its reserve.
+    slot = (insets["left"], slot_top, w - insets["right"], min(chat_bottom, info["top"] - gap))
+
+    card = _draw_chat(canvas, chat or {}, slot, brand, info["warnings"])
+    _save(canvas, out_path, jpeg)
+    return {
+        "render_size": (w, h),
+        "output_size": (w, h),
+        "rects": {"logo": logo_rect, "chat": card, **info["rects"]},
+        "slot": slot,
+        "warnings": info["warnings"],
+    }
+
+
+def _chat_metrics(messages: list, title: str, avail_w: int, unit: int, tokens: dict) -> dict:
+    """Measure the card before drawing it; the caller shrinks ``unit`` until it fits."""
+    title = " ".join((title or "").split()).upper()
+    text_font = load_font(tokens["body"], int(unit))
+    meta_size = max(12, int(unit * 0.48))
+    meta_font = load_font(tokens["mono"], meta_size)
+    title_font = load_font(tokens["mono"], int(unit * 0.55))
+    pad = int(unit * 0.95)
+    bpad_x = int(unit * 0.62)
+    bpad_y = int(unit * 0.45)
+    gap = int(unit * 0.42)
+    line_h = int(unit * 1.3)
+    meta_h = int(meta_size * 1.35)
+
+    inner_w = avail_w - 2 * pad
+    text_max = int(avail_w * 0.72) - 2 * bpad_x
+    header = int(meta_size * 2.0) if title else 0
+
+    top = pad + header
+    rows = []
+    for message in messages:
+        body = " ".join(str(message.get("text", "")).split())
+        lines = wrap(body, text_font, max(text_max, 60))
+        sender = " ".join(str(message.get("from", "")).split()).upper()
+        stamp = " ".join(str(message.get("time", "")).split())
+        text_w = max((text_font.getlength(line) for line in lines), default=0)
+        time_w = meta_font.getlength(stamp) if stamp else 0
+        head_w = meta_font.getlength(sender) + (time_w + unit * 0.8 if stamp else 0)
+        bubble_w = int(min(inner_w, max(text_w, head_w) + 2 * bpad_x))
+        bubble_h = bpad_y * 2 + meta_h + int(unit * 0.18) + len(lines) * line_h
+        rows.append(
+            {
+                "top": top,
+                "w": bubble_w,
+                "h": bubble_h,
+                "lines": lines,
+                "sender": sender,
+                "time": stamp,
+                "time_w": time_w,
+            }
+        )
+        top += bubble_h + gap
+
+    return {
+        "title": title,
+        "title_font": title_font,
+        "text_font": text_font,
+        "meta_font": meta_font,
+        "meta_h": meta_h,
+        "pad": pad,
+        "bpad_x": bpad_x,
+        "bpad_y": bpad_y,
+        "line_h": line_h,
+        "rows": rows,
+        "height": top - gap + pad,
+    }
+
+
+def _draw_chat(canvas, chat: dict, slot, brand: dict, warnings: list) -> tuple | None:
+    x0, y0, x1, y1 = slot
+    tokens = _tokens(brand)
+    messages = [m for m in (chat.get("messages") or []) if isinstance(m, dict) and m.get("text")]
+    if not messages:
+        warnings.append("chat layout with no messages")
+        return None
+    avail_w, avail_h = x1 - x0, y1 - y0
+    if avail_w < 240 or avail_h < 150:
+        warnings.append("no room left for the chat")
+        return None
+
+    unit = int(min(canvas.size) * CHAT_UNIT)
+    metrics = _chat_metrics(messages, chat.get("title") or "", avail_w, unit, tokens)
+    while unit > 12 and metrics["height"] > avail_h:
+        unit = int(unit * 0.93)
+        metrics = _chat_metrics(messages, chat.get("title") or "", avail_w, unit, tokens)
+    if metrics["height"] > avail_h:
+        warnings.append("chat does not fit the slot")
+
+    draw = ImageDraw.Draw(canvas)
+    border = max(2, int(round(2 * scale_for(canvas.size))))
+    card_w = int(
+        min(avail_w, max(max(row["w"] for row in metrics["rows"]) + 2 * metrics["pad"], avail_w * 0.62))
+    )
+    bottom = y0 + min(metrics["height"], avail_h)
+    draw.rounded_rectangle(
+        (x0, y0, x0 + card_w, bottom),
+        radius=int(unit * 0.8),
+        fill=tokens["panel"],
+        outline=tokens["line"],
+        width=border,
+    )
+
+    if metrics["title"]:
+        draw.text(
+            (x0 + metrics["pad"], y0 + metrics["pad"]),
+            metrics["title"],
+            font=metrics["title_font"],
+            fill=tokens["accent_text"],
+        )
+        rule_y = y0 + metrics["pad"] + int(metrics["meta_h"] * 1.6)
+        draw.line([(x0 + metrics["pad"], rule_y), (x0 + card_w - metrics["pad"], rule_y)],
+                  fill=tokens["line"], width=1)
+
+    for row in metrics["rows"]:
+        bx0 = x0 + metrics["pad"]
+        by0 = y0 + row["top"]
+        draw.rounded_rectangle(
+            (bx0, by0, bx0 + row["w"], by0 + row["h"]),
+            radius=int(unit * 0.5),
+            fill=tokens["line"],
+        )
+        draw.text(
+            (bx0 + metrics["bpad_x"], by0 + metrics["bpad_y"]),
+            row["sender"],
+            font=metrics["meta_font"],
+            fill=tokens["accent_text"],
+        )
+        if row["time"]:
+            draw.text(
+                (bx0 + row["w"] - metrics["bpad_x"] - row["time_w"],
+                 by0 + metrics["bpad_y"]),
+                row["time"],
+                font=metrics["meta_font"],
+                fill=tokens["muted"],
+            )
+        _draw_lines(
+            draw,
+            (
+                bx0 + metrics["bpad_x"],
+                by0 + metrics["bpad_y"] + metrics["meta_h"] + int(unit * 0.18),
+            ),
+            row["lines"],
+            metrics["text_font"],
+            metrics["line_h"],
+            tokens["ink"],
+        )
+    return (x0, y0, int(x0 + card_w), int(bottom))
 
 
 def compose(
