@@ -1,0 +1,267 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>DariDev · Operación</title>
+<style>
+  @font-face { font-family: Inter; src: url('../../brands/daridev/fonts/Inter-Regular.ttf'); font-weight: 400; }
+  @font-face { font-family: Inter; src: url('../../brands/daridev/fonts/Inter-Bold.ttf'); font-weight: 700; }
+  @font-face { font-family: JBMono; src: url('../../brands/daridev/fonts/JetBrainsMono-ExtraBold.ttf'); font-weight: 800; }
+
+  :root {
+    --bg: #f9fafb; --surface: #fff; --border: #e5e7eb; --text: #111827; --muted: #6b7280;
+    --faint: #9ca3af; --gold: #b8860b; --gold-strong: #8a6508; --gold-soft: #fdf7e7;
+    --amber: #b45309; --amber-soft: #fef3c7; --green: #047857; --green-soft: #d1fae5;
+    --slate-soft: #f3f4f6; --radius: 6px; --fs: 14px;
+    --primary: #2d496d; --primary-tint: #eef2f7; --body: #4a5565; --shadow: 0 1px 2px rgba(0,0,0,.05);
+  }
+  * { box-sizing: border-box; margin: 0; }
+  html, body { height: 100%; }
+  body {
+    font-family: Inter, system-ui, sans-serif; font-size: var(--fs); color: var(--body);
+    background: var(--bg); display: grid; grid-template-columns: 287px 1fr; overflow: hidden;
+  }
+  svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+
+  .side { background: var(--bg); border-right: 1px solid var(--border); padding: 16px 14px; display: flex; flex-direction: column; gap: 14px; }
+  .brand { display: flex; align-items: center; gap: 10px; padding: 2px 4px 10px; border-bottom: 1px solid var(--border); }
+  .mark { width: 30px; height: 30px; border-radius: 8px; background: var(--gold); color: #fff; font-weight: 700; font-size: 15px; display: grid; place-items: center; }
+  .brand b { display: block; font-size: 13px; }
+  .brand span { display: block; font-size: 11px; color: var(--muted); }
+  .search { display: flex; align-items: center; gap: 8px; padding: 7px 9px; border: 1px solid var(--border); border-radius: 8px; color: var(--faint); font-size: 12px; }
+  .search kbd { margin-left: auto; font-family: JBMono; font-size: 9px; border: 1px solid var(--border); border-radius: 4px; padding: 1px 4px; color: var(--faint); }
+  .nav { display: flex; flex-direction: column; gap: 2px; }
+  .nav .sec { font-size: 10px; letter-spacing: .06em; text-transform: uppercase; color: var(--faint); padding: 10px 8px 4px; }
+  .nav a { display: flex; align-items: center; gap: 9px; padding: 7px 8px; border-radius: 7px; color: #374151; text-decoration: none; font-size: 12.5px; }
+  .nav a.on { background: var(--primary-tint); color: var(--primary); font-weight: 600; }
+  .side .foot { margin-top: auto; border-top: 1px solid var(--border); padding-top: 10px; display: flex; align-items: center; gap: 8px; }
+  .avatar { width: 26px; height: 26px; border-radius: 50%; background: var(--slate-soft); display: grid; place-items: center; font-size: 11px; color: var(--muted); font-weight: 700; }
+  .side .foot b { display: block; font-size: 11.5px; }
+  .side .foot span { display: block; font-size: 10px; color: var(--muted); }
+
+  .main { display: flex; flex-direction: column; min-width: 0; }
+  .top { height: 56px; flex: none; display: flex; align-items: center; gap: 10px; padding: 0 20px; background: var(--surface); border-bottom: 1px solid var(--border); }
+  .crumb { display: flex; align-items: center; gap: 7px; color: var(--muted); font-size: 13px; }
+  .crumb b { color: var(--text); }
+  .top .spacer { flex: 1; }
+  .date { font-family: JBMono; font-size: 12px; color: var(--muted); }
+  .btn { background: var(--primary); color: #fff; border: 0; border-radius: var(--radius); padding: 8px 13px; font: inherit; font-size: 12.5px; font-weight: 700; }
+
+  .body { padding: 16px 20px 20px; display: flex; flex-direction: column; gap: 14px; min-height: 0; flex: 1; }
+  .kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+  .kpi { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); padding: 10px 14px; }
+  .kpi .lbl { font-size: 12px; font-weight: 500; color: var(--muted); }
+  .kpi .val { font-size: 26px; font-weight: 700; line-height: 1.15; margin-top: 3px; color: var(--text); }
+  .kpi .val em { font-style: normal; font-size: 13px; font-weight: 400; color: var(--muted); }
+  .kpi.warn .val { color: var(--amber); }
+
+  .cols { display: grid; grid-template-columns: 1fr 288px; gap: 14px; min-height: 0; flex: 1; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); }
+  .card > h2 { font-size: 14px; font-weight: 600; color: var(--text); padding: 10px 14px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 8px; }
+  .card > h2 .tail { margin-left: auto; font-weight: 400; font-size: 11px; color: var(--muted); }
+
+  .timeline { display: flex; flex-direction: column; min-width: 0; }
+  .axis { display: grid; grid-template-columns: 104px 1fr; padding: 8px 14px 0; }
+  .axis .ticks { position: relative; height: 16px; }
+  .axis .ticks span { position: absolute; transform: translateX(-50%); font-family: JBMono; font-size: 10px; color: var(--faint); }
+  .lanes { padding: 4px 14px 14px; display: flex; flex-direction: column; gap: 8px; flex: 1; min-height: 0; }
+  .lane { display: grid; grid-template-columns: 104px 1fr; gap: 10px; align-items: stretch; flex: 1; min-height: 0; }
+  .lane .who { display: flex; flex-direction: column; justify-content: center; gap: 2px; }
+  .lane .who b { font-size: 12.5px; }
+  .lane .who span { font-family: JBMono; font-size: 9.5px; color: var(--faint); }
+  .track { position: relative; background: var(--slate-soft); border-radius: 7px; height: 100%; min-height: 56px; overflow: hidden; }
+  .grid-line { position: absolute; top: 0; bottom: 0; width: 1px; background: #ededf0; }
+  .block { position: absolute; border-radius: 6px; padding: 5px 7px; overflow: hidden; background: #eef0f3; border-left: 3px solid #9aa3af; }
+  .block b { display: block; font-size: 11px; font-weight: 700; white-space: nowrap; padding-right: 54px; }
+  .block span { display: block; font-size: 9.5px; color: #6b7280; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .block.conf { background: var(--amber-soft); border-left-color: var(--amber); }
+  .block.conf b, .block.conf span { color: #7c2d12; }
+  .brace { position: absolute; width: 4px; background: var(--amber); border-radius: 2px; }
+  .flag { position: absolute; transform: translate(-100%, -50%); background: var(--amber); color: #fff; font-style: normal; font-size: 8.5px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; border-radius: 4px; padding: 3px 6px; white-space: nowrap; }
+
+  body[data-view="full"] .flag { display: none; }
+  body[data-view="full"] .block b { padding-right: 0; }
+  .legend { padding: 0 14px 14px; font-size: 11px; color: var(--faint); }
+  .rail { display: flex; flex-direction: column; gap: 14px; min-height: 0; }
+  .sugg { padding: 13px; }
+  .sugg .tag { display: inline-block; background: var(--gold-soft); color: var(--gold-strong); font-size: 9.5px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; border-radius: 4px; padding: 2px 5px; }
+  .sugg p { font-size: 12.5px; line-height: 1.45; margin: 8px 0 10px; }
+  .sugg p b { font-weight: 700; }
+  .sugg .why { font-size: 10.5px; color: var(--muted); margin-bottom: 10px; }
+  .sugg .btn { width: 100%; }
+  .units { padding: 4px 0 6px; }
+  .unit { display: flex; align-items: center; gap: 9px; padding: 8px 13px; }
+  .unit + .unit { border-top: 1px solid #f3f4f6; }
+  .unit .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); }
+  .unit .dot.base { background: var(--faint); }
+  .unit b { font-size: 12px; }
+  .unit span { display: block; font-family: JBMono; font-size: 9px; color: var(--faint); }
+  .pill { margin-left: auto; font-size: 10px; padding: 2px 7px; border-radius: 999px; background: var(--green-soft); color: var(--green); font-weight: 700; }
+  .pill.base { background: var(--slate-soft); color: var(--muted); }
+  .pill.late { background: var(--amber-soft); color: var(--amber); }
+
+  /* ── vista del anuncio: menos horas, menos carriles, todo más grande ── */
+  body[data-view="ad"] { --fs: 16px; grid-template-columns: 56px 1fr; }
+  body[data-view="ad"] .side { padding: 14px 10px; align-items: center; }
+  body[data-view="ad"] .side .brand { border: 0; padding: 0 0 12px; }
+  body[data-view="ad"] .brand div:last-child, body[data-view="ad"] .search,
+  body[data-view="ad"] .nav span, body[data-view="ad"] .nav .sec,
+  body[data-view="ad"] .side .foot div { display: none; }
+  body[data-view="ad"] .nav a { padding: 9px; font-size: 0; justify-content: center; }
+  body[data-view="ad"] .lane { flex: none; }
+  body[data-view="ad"] .track { height: auto; }
+  body[data-view="ad"] .legend { display: none; }
+  body[data-view="ad"] .top { height: 54px; padding: 0 20px; }
+  body[data-view="ad"] .crumb { font-size: 15px; }
+  body[data-view="ad"] .date { font-size: 13px; }
+  body[data-view="ad"] .btn { font-size: 14px; padding: 10px 16px; }
+  body[data-view="ad"] .body { padding: 12px 20px 16px; gap: 12px; }
+  body[data-view="ad"] .kpi { padding: 9px 13px; }
+  body[data-view="ad"] .kpi .lbl { font-size: 10px; }
+  body[data-view="ad"] .kpi .val { font-size: 28px; }
+  body[data-view="ad"] .kpi .val em { font-size: 15px; }
+  body[data-view="ad"] .cols { grid-template-columns: 1fr; }
+  body[data-view="ad"] .rail { display: none; }
+  body[data-view="ad"] .card > h2 { font-size: 14px; padding: 13px 16px; }
+  body[data-view="ad"] .axis { grid-template-columns: 128px 1fr; padding: 10px 16px 0; }
+  body[data-view="ad"] .axis .ticks span { font-size: 12px; }
+  body[data-view="ad"] .lanes { padding: 4px 16px 12px; gap: 8px; }
+  body[data-view="ad"] .lane { grid-template-columns: 128px 1fr; }
+  body[data-view="ad"] .lane .who b { font-size: 16px; }
+  body[data-view="ad"] .lane .who span { font-size: 11px; }
+  body[data-view="ad"] .block { padding: 8px 10px; border-left-width: 4px; }
+  body[data-view="ad"] .block b { font-size: 15px; }
+  body[data-view="ad"] .block span { font-size: 12px; }
+  body[data-view="ad"] .flag { font-size: 10px; padding: 3px 6px; }
+  body[data-view="ad"] .block { padding: 7px 10px; }
+</style>
+</head>
+<body data-view="full">
+  <aside class="side" data-zone="sidebar">
+    <div class="brand">
+      <div class="mark">D</div>
+      <div><b>DariDev</b><span>Operación</span></div>
+    </div>
+    <div class="search">Buscar…<kbd>t</kbd></div>
+    <nav class="nav">
+      <span class="sec">Operación</span>
+      <a class="on" href="#"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg> Día</a>
+      <a href="#"><svg viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg> Reservas</a>
+      <a href="#"><svg viewBox="0 0 24 24"><path d="M2 5h13v10H2z"/><path d="M15 9h4l3 3v3h-7z"/><circle cx="6" cy="18" r="2"/><circle cx="17" cy="18" r="2"/></svg> Unidades</a>
+      <a href="#"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"/><path d="M3 20a6 6 0 0 1 12 0M16 6a3 3 0 0 1 0 6M18 20a6 6 0 0 0-3-5"/></svg> Pasajeros</a>
+      <span class="sec">Análisis</span>
+      <a href="#"><svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg> Reportes</a>
+    </nav>
+    <div class="foot">
+      <div class="avatar">DR</div>
+      <div><b>Darien R.</b><span>Admin</span></div>
+    </div>
+  </aside>
+
+  <div class="main">
+    <header class="top" data-zone="header">
+      <div class="crumb">Operación <span>›</span> <b>Día</b></div>
+      <div class="spacer"></div>
+      <div class="date" id="date"></div>
+      <button class="btn">Nueva reserva</button>
+    </header>
+
+    <div class="body">
+      <section class="kpis" data-zone="kpis"></section>
+      <div class="cols">
+        <section class="card timeline" data-zone="timeline">
+          <h2>Línea de tiempo <span class="tail" id="range"></span></h2>
+          <div class="axis"><div></div><div class="ticks" id="ticks"></div></div>
+          <div class="lanes" id="lanes"></div>
+          <div class="legend">Dos reservas en la misma unidad y horario se marcan como conflicto.</div>
+        </section>
+        <aside class="rail" data-zone="aside">
+          <div class="card sugg" id="suggestion"></div>
+          <div class="card units">
+            <h2 style="padding:11px 13px;border-bottom:1px solid var(--border)">Unidades</h2>
+            <div id="units"></div>
+          </div>
+        </aside>
+      </div>
+    </div>
+  </div>
+
+<script>
+const view = new URLSearchParams(location.search).get("view") || "full";
+const ad = view === "ad";
+document.body.dataset.view = view;
+const [H0, H1] = ad ? [8, 11] : [8, 18];
+const minutes = t => { const [h, m] = t.split(":").map(Number); return h * 60 + m; };
+const pct = mins => ((mins - H0 * 60) / ((H1 - H0) * 60)) * 100;
+
+fetch("data.json").then(r => r.json()).then(d => {
+  document.getElementById("date").textContent = d.date;
+  document.getElementById("range").textContent = `${String(H0).padStart(2, "0")}:00 – ${String(H1).padStart(2, "0")}:00`;
+
+  const kpis = [
+    ["Reservas", d.kpis.trips, ""],
+    ["Pasajeros", d.kpis.pax, ""],
+    ["Unidades en ruta", d.kpis.on_route, `/${d.kpis.units}`],
+    ["Conflictos", d.kpis.conflicts, ""],
+  ];
+  document.querySelector(".kpis").innerHTML = kpis.map(([l, v, rest], i) =>
+    `<div class="kpi${i === 3 ? " warn" : ""}"><div class="lbl">${l}</div>
+     <div class="val">${v}<em>${rest.replace("/", " / ")}</em></div></div>`).join("");
+
+  const ticks = document.getElementById("ticks");
+  for (let h = H0; h <= H1; h++) {
+    ticks.insertAdjacentHTML("beforeend", `<span style="left:${pct(h * 60)}%">${String(h).padStart(2, "0")}:00</span>`);
+  }
+
+  const lanes = ad ? d.units.filter(u => u.name !== "Van 4" && u.name !== "Van 1") : d.units;
+  const blockH = ad ? 38 : 38;
+  const laneH = ad ? 92 : null;
+  document.getElementById("lanes").innerHTML = lanes.map(u => {
+    let row = 0, prevEnd = 0;
+    const blocks = d.trips.filter(t => t.unit === u.name)
+      .filter(t => minutes(t.end) > H0 * 60 && minutes(t.start) < H1 * 60)
+      .sort((a, b) => minutes(a.start) - minutes(b.start))
+      .map(t => {
+        const start = minutes(t.start), end = minutes(t.end);
+        row = start < prevEnd && row === 0 ? 1 : 0;
+        prevEnd = Math.max(prevEnd, end);
+        const left = Math.max(0, pct(start));
+        const width = pct(end) - left;
+        const title = t.conflict ? `${t.start} · ${t.pax} pax` : `#${t.id} · ${t.pax} pax`;
+        const sub = t.conflict ? `#${t.id} · ${t.from} → ${t.to}` : `${t.from} → ${t.to}`;
+        return `<div class="block${t.conflict ? " conf" : ""}" style="left:${left}%;width:${width}%;top:${row * (blockH + 6) + 4}px;height:${blockH}px">
+          <b>${title}</b><span>${sub}</span></div>`;
+      }).join("");
+    const lines = [];
+    for (let h = H0; h <= H1; h++) lines.push(`<i class="grid-line" style="left:${pct(h * 60)}%"></i>`);
+    const conf = d.trips.filter(t => t.unit === u.name && t.conflict).sort((a, b) => minutes(a.start) - minutes(b.start));
+    let brace = "";
+    if (conf.length > 1) {
+      const top = 4, bottom = 4 + conf.length * blockH + (conf.length - 1) * 6;
+      const bx = pct(minutes(conf[0].start));
+      brace = `<i class="brace" style="left:calc(${bx}% - 12px);top:${top}px;height:${bottom - top}px"></i>` +
+              `<i class="flag" style="left:calc(${bx}% - 24px);top:${(top + bottom) / 2}px">conflicto</i>`;
+    }
+    return `<div class="lane"><div class="who"><b>${u.name}</b><span>${u.plate}</span></div>
+      <div class="track"${laneH ? ` style="height:${laneH}px"` : ""}>${lines.join("")}${brace}${blocks}</div></div>`;
+  }).join("");
+
+  const s = d.suggestion;
+  document.getElementById("suggestion").innerHTML = `
+    <span class="tag">Sugerencia</span>
+    <p>Mover <b>#${s.trip}</b> de ${s.from} a <b>${s.to}</b> a las ${s.at}.</p>
+    <div class="why">Libera ${s.from} y respeta la salida del pasajero.</div>
+    <button class="btn">Aplicar cambio</button>`;
+
+  document.getElementById("units").innerHTML = d.units.map(u => {
+    const base = u.status === "en base";
+    const pill = u.late
+      ? '<span class="pill late">retrasada</span>'
+      : base ? '<span class="pill base">en base</span>' : '<span class="pill">en ruta</span>';
+    return `<div class="unit"><i class="dot${base ? " base" : ""}"></i>
+      <div><b>${u.name}</b><span>${u.driver} · ${u.plate}</span></div>${pill}</div>`;
+  }).join("");
+});
+</script>
+</body>
+</html>

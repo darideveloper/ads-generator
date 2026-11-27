@@ -615,9 +615,16 @@ def run(args) -> int:
     if layout == "photo":
         print(f"refs     : {len(refs)} attached" + (f", {len(dropped_refs)} dropped (model limit)" if dropped_refs else ""))
 
-    plan, text_cost = openrouter.chat_json(
-        config["text_model"], SYSTEM_PROMPT, build_prompt(brand, campaign, count), PLAN_SCHEMA
-    )
+    if args.reuse:
+        reuse_path = config["output_dir"] / campaign["slug"] / "plan.json"
+        if not reuse_path.exists():
+            raise ConfigError(f"--reuse: no plan at {display_path(reuse_path)}")
+        plan, text_cost = json.loads(reuse_path.read_text()), 0.0
+        print(f"reuse    : {display_path(reuse_path)}")
+    else:
+        plan, text_cost = openrouter.chat_json(
+            config["text_model"], SYSTEM_PROMPT, build_prompt(brand, campaign, count), PLAN_SCHEMA
+        )
     concepts, ab_plan, warnings = normalize_plan(plan, count, needs_image=layout == "photo")
     if campaign["on_image"]:
         # Authored copy wins over the model: three statements of the same pain, approved before
@@ -911,6 +918,7 @@ def parse_args(argv=None):
     parser.add_argument("--brand", help="brand name under brands/ (default: campaign.brand)")
     parser.add_argument("--brand-path", help="explicit path to brand.yaml")
     parser.add_argument("--dry-run", action="store_true", help="plan + prompts only, no images")
+    parser.add_argument("--reuse", action="store_true", help="reuse out/<slug>/plan.json, no text call")
     parser.add_argument("--only", action="append", help="render only these concepts (repeatable)")
     parser.add_argument("--layout", help=f"override campaign layout: {', '.join(LAYOUTS)}")
     parser.add_argument("--variants", help="variants to render, default AB (subset of ABC)")

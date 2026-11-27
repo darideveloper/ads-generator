@@ -1,0 +1,27 @@
+{
+  "date": "Sáb 14 nov",
+  "kpis": { "trips": 14, "pax": 38, "on_route": 3, "units": 4, "conflicts": 2 },
+  "units": [
+    { "name": "Van 1", "plate": "ABC-123", "driver": "Luis M.", "status": "en ruta" },
+    { "name": "Van 2", "plate": "DFG-456", "driver": "Joel R.", "status": "en base" },
+    { "name": "Van 3", "plate": "HIJ-789", "driver": "Karla S.", "status": "en ruta" },
+    { "name": "Van 4", "plate": "KLM-012", "driver": "Marco T.", "status": "en ruta", "late": true }
+  ],
+  "trips": [
+    { "id": 2201, "unit": "Van 1", "start": "07:30", "end": "09:00", "pax": 4, "from": "Aeropuerto T2", "to": "Riu Palace" },
+    { "id": 2202, "unit": "Van 1", "start": "09:30", "end": "11:00", "pax": 2, "from": "Riu Palace", "to": "Playa Norte" },
+    { "id": 2203, "unit": "Van 1", "start": "12:00", "end": "13:30", "pax": 4, "from": "Hotel Barceló", "to": "Aeropuerto T3" },
+    { "id": 2204, "unit": "Van 2", "start": "09:00", "end": "10:30", "pax": 6, "from": "Aeropuerto T3", "to": "Hotel Zone", "conflict": true },
+    { "id": 2205, "unit": "Van 2", "start": "11:00", "end": "12:30", "pax": 3, "from": "Downtown", "to": "Playa del Carmen" },
+    { "id": 2206, "unit": "Van 2", "start": "13:00", "end": "14:30", "pax": 2, "from": "Hotel Zone", "to": "Tulum" },
+    { "id": 2207, "unit": "Van 3", "start": "08:00", "end": "09:30", "pax": 2, "from": "Cancún Centro", "to": "Puerto Morelos" },
+    { "id": 2208, "unit": "Van 3", "start": "10:00", "end": "11:30", "pax": 3, "from": "Puerto Morelos", "to": "Playa del Carmen" },
+    { "id": 2209, "unit": "Van 3", "start": "15:00", "end": "16:30", "pax": 2, "from": "Tulum", "to": "Aeropuerto T2" },
+    { "id": 2210, "unit": "Van 4", "start": "09:30", "end": "11:00", "pax": 2, "from": "Hotel Barceló", "to": "Isla Mujeres" },
+    { "id": 2211, "unit": "Van 4", "start": "12:30", "end": "14:00", "pax": 2, "from": "Isla Mujeres", "to": "Cancún Centro" },
+    { "id": 2212, "unit": "Van 4", "start": "16:00", "end": "17:30", "pax": 2, "from": "Cancún Centro", "to": "Aeropuerto T3" },
+    { "id": 2213, "unit": "Van 1", "start": "15:30", "end": "17:00", "pax": 2, "from": "Playa Norte", "to": "Hotel Zone" },
+    { "id": 2214, "unit": "Van 2", "start": "09:00", "end": "10:15", "pax": 2, "from": "Aeropuerto T2", "to": "Downtown", "conflict": true }
+  ],
+  "suggestion": { "trip": 2214, "from": "Van 2", "to": "Van 3", "at": "09:30" }
+}

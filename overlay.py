@@ -44,6 +44,7 @@ CTA_H = 0.070
 CTA_TEXT = 0.035
 DISCLAIMER = 0.016
 LINE = 1.18
+CAPTURE_SHARE = 0.615  # band the screenshot claims above the statement
 CHAT_SHARE = 0.56  # share of the content height the chat card claims above the statement
 GRID = 44
 GRID_ALPHA = 23  # 9 % ice
@@ -291,8 +292,11 @@ def _logo(canvas: Image.Image, brand: dict, insets: dict):
         logo = source.convert("RGBA")
     logo_w = max(1, int(logo.width * target_h / logo.height))
     logo = logo.resize((logo_w, target_h), Image.LANCZOS)
-    canvas.alpha_composite(logo, (insets["left"], insets["top"]))
-    return (insets["left"], insets["top"], insets["left"] + logo_w, insets["top"] + target_h)
+    # Sit inside the frame: on the corner the mark cuts the line and reads as a hole.
+    x = insets["left"] + int(12 * scale_for(canvas.size))
+    y = insets["top"] + int(12 * scale_for(canvas.size))
+    canvas.alpha_composite(logo, (x, y))
+    return (x, y, x + logo_w, y + target_h)
 
 
 def _draw_tracked(draw, xy, text, font, fill, track) -> float:
@@ -319,7 +323,8 @@ def _statement(canvas: Image.Image, brand: dict, copy: dict, insets: dict,
 
     left, right = insets["left"], w - insets["right"]
     box_w = right - left
-    bottom = h - insets["bottom"]
+    # Keep the CTA off the frame line: the button is the last thing and it should breathe.
+    bottom = h - insets["bottom"] - int(12 * scale)
     top_limit = insets["top"]
 
     headline = " ".join((copy.get("headline") or "").split())
@@ -442,13 +447,18 @@ def compose_capture(out_path, brand: dict, copy: dict, target_size, capture_path
     insets = insets_for(target_size)
     _frame(canvas, brand, insets)
     logo_rect = _logo(canvas, brand, insets)
-    info = _statement(canvas, brand, copy, insets, kicker)
 
+    # Reserve the screenshot's band first, then let the statement size itself in what is left:
+    # the other order gives the headline the whole canvas and leaves no room for the image.
     w, h = canvas.size
     scale = scale_for(canvas.size)
     gap = int(28 * scale)
+    content_h = h - insets["top"] - insets["bottom"]
+    capture_bottom = insets["top"] + int(content_h * CAPTURE_SHARE)
+    info = _statement(canvas, brand, copy, dict(insets, top=capture_bottom + gap), kicker)
+
     slot_top = (logo_rect[3] if logo_rect else insets["top"]) + gap
-    slot = (insets["left"], slot_top, w - insets["right"], info["top"] - gap)
+    slot = (insets["left"], slot_top, w - insets["right"], min(capture_bottom, info["top"] - gap))
     capture_rect = _place_capture(canvas, capture_path, slot, brand, info["warnings"])
     _save(canvas, out_path, jpeg)
     return {
@@ -488,7 +498,7 @@ def _place_capture(canvas, path, slot, brand: dict, warnings: list) -> tuple | N
 
     x = x0 + (slot_w - shot.width) // 2
     y = y0 + (slot_h - shot.height) // 2
-    border = max(2, int(round(2 * scale_for(canvas.size))))
+    border = max(3, int(round(3 * scale_for(canvas.size))))
     ImageDraw.Draw(canvas).rectangle(
         (x - border, y - border, x + shot.width + border, y + shot.height + border),
         outline=_tokens(brand)["line"],
@@ -798,8 +808,17 @@ def compose(
 def _save(image: Image.Image, out_path, jpeg: bool = False) -> None:
     out_path = Path(out_path)
     out_path.parent.mkdir(parents=True, exist_ok=True)
+    if image.mode == "RGBA":
+        # Text drawn with a translucent fill leaves partial alpha. A viewer composites it over
+        # whatever it likes — white here, black there — so the same file would not look the same.
+        # Flatten onto the canvas colour: what we see is what ships.
+        if image.getchannel("A").getextrema()[0] < 255:
+            image = Image.alpha_composite(
+                Image.new("RGBA", image.size, image.getpixel((0, 0))), image
+            )
+        image = image.convert("RGB")
     if jpeg or out_path.suffix.lower() in {".jpg", ".jpeg"}:
-        image.convert("RGB").save(out_path, "JPEG", quality=90, optimize=True)
+        image.save(out_path, "JPEG", quality=90, optimize=True)
     else:
         image.save(out_path, "PNG", optimize=True)
 

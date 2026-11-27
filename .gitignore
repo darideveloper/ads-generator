@@ -20,3 +20,9 @@ venv/
 .idea/
 .vscode/
 .DS_Store
+
+# final files handed to Meta, local only
+entrega/
+
+# captures rendered from mocks/panel-dia (python mocks/panel-dia/shot.py)
+capturas/

@@ -143,3 +143,19 @@ def test_budget_guard_skips(tmp_path, monkeypatch):
     manifest = json.loads((tmp_path / "out" / "example" / "manifest.json").read_text())
     assert manifest["totals"]["clean"] == 0
     assert any(a["status"] == "skipped_budget" for a in manifest["assets"])
+
+
+def test_reuse_skips_the_text_model(tmp_path, monkeypatch):
+    stub(monkeypatch)
+    monkeypatch.setenv("OUTPUT_DIR", str(tmp_path / "out"))
+    base = ["--campaign", str(ads.ROOT / "campaigns/example.yaml"), "--ratios", "1:1", "--layout", "type", "--variants", "A"]
+    assert ads.run(ads.parse_args(base)) == 0
+
+    def boom(*args, **kwargs):
+        raise AssertionError("--reuse must not call the text model")
+
+    monkeypatch.setattr(ads.openrouter, "chat_json", boom)
+    assert ads.run(ads.parse_args(base + ["--reuse", "--force"])) == 0
+    manifest = json.loads((tmp_path / "out" / "example" / "manifest.json").read_text())
+    assert manifest["totals"]["text_cost_usd"] == 0.0
+    assert manifest["totals"]["finals"] == 3
